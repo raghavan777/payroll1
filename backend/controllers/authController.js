@@ -94,13 +94,12 @@ exports.login = async (req, res) => {
     // ✅ FIX 2: Put correct permissions & organizationId into JWT
     let employeeCode = null;
 
-    // If user is an employee, fetch their employeeCode
-    if (user.role === "EMPLOYEE") {
-      const Employee = require("../models/Employee");
-      const emp = await Employee.findOne({ userId: user._id });
-      if (emp) {
-        employeeCode = emp.employeeCode;
-      }
+    // 🔹 FIX: Always try to fetch employeeCode if it exists (for HR, Admin, etc.)
+    // This allows HR/Admins to also access "My Payroll History"
+    const Employee = require("../models/Employee");
+    const emp = await Employee.findOne({ userId: user._id });
+    if (emp) {
+      employeeCode = emp.employeeCode;
     }
 
     const accessToken = jwt.sign(

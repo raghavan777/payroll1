@@ -33,13 +33,16 @@ export default function PayrollHistory() {
             }
 
             // 🔹 Dynamic Endpoint
-            const endpoint = userRole === "EMPLOYEE"
-                ? "/api/payroll/history/me"
-                : "/api/payroll/history";
+            // ONLY SUPER_ADMIN gets to see everything.
+            // Everyone else (HR, Employee, etc.) sees only THEIR own history.
+            const endpoint = userRole === "SUPER_ADMIN"
+                ? "/api/payroll/history"
+                : "/api/payroll/history/me";
 
             const res = await api.get(endpoint);
             setPayrolls(res.data);
         } catch (err) {
+            console.error("Failed to load payroll history", err);
             toast.error("Failed to load payroll history");
         } finally {
             setLoading(false);
@@ -88,7 +91,7 @@ export default function PayrollHistory() {
                                     <th className="border p-2">Gross Salary</th>
                                     <th className="border p-2">Net Salary</th>
                                     <th className="border p-2">Status</th>
-                                    {role !== "EMPLOYEE" && (
+                                    {role === "SUPER_ADMIN" && (
                                         <th className="border p-2">Action</th>
                                     )}
                                 </tr>
@@ -126,7 +129,7 @@ export default function PayrollHistory() {
                                             )}
                                         </td>
 
-                                        {role !== "EMPLOYEE" && (
+                                        {role === "SUPER_ADMIN" && (
                                             <td className="border p-2">
                                                 {p.status !== "APPROVED" && (
                                                     <button

@@ -22,7 +22,6 @@ module.exports = {
     "VIEW_USER",
     "run_payroll",
     "view_reports",
-    "approve_payroll",
     "view_payroll"
   ],
   EMPLOYEE: [

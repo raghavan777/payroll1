@@ -193,6 +193,11 @@ exports.approvePayroll = async (req, res) => {
 ===================================================== */
 exports.getPayrollHistory = async (req, res) => {
   try {
+    // 🔹 RESTRICTION: Only SUPER_ADMIN can see ALL history
+    if (req.user.role !== "SUPER_ADMIN") {
+      return res.status(403).json({ message: "Access Denied: Only Super Admin can view all payroll history" });
+    }
+
     const payrolls = await Payroll.find({
       organizationId: req.user.organizationId,
       status: "APPROVED",
@@ -211,12 +216,20 @@ exports.getPayrollHistory = async (req, res) => {
 ===================================================== */
 exports.getMyPayrollHistory = async (req, res) => {
   try {
-    const employeeCode = req.user.employeeCode;
+    let employeeCode = req.user.employeeCode;
+
+    // 🔹 Fallback: If token doesn't have employeeCode, try to find it in DB
+    if (!employeeCode) {
+      const Employee = require("../models/Employee");
+      const emp = await Employee.findOne({ userId: req.user.id });
+      if (emp) {
+        employeeCode = emp.employeeCode;
+      }
+    }
 
     if (!employeeCode) {
-      return res.status(400).json({
-        message: "Employee code missing in token",
-      });
+      console.warn("getMyPayrollHistory: No employee code found for user", req.user.id);
+      return res.json([]); // Return empty history instead of error
     }
 
     const payrolls = await Payroll.find({
